@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import DataTable from './DataTable'
 import ProductFormModel from './ProductFormModel'
+import ProductDataTable from './ProductDataTable';
 
 
 const AdminProduct = () => {
@@ -13,7 +13,7 @@ const AdminProduct = () => {
         </div>
       </div>
       <ProductFormModel open={open}  setOpen={setOpen} />
-      
+      <ProductDataTable/>
     </div>
   )
 }

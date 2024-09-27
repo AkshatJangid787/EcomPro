@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardOverview = () => {
+const Dashboard = () => {
     return (
         <div className="p-6 bg-gray-100 h-full">
             <h1 className="text-3xl font-bold mb-6">Admin Dashboard Overview</h1>
@@ -28,4 +28,4 @@ const DashboardOverview = () => {
     );
 };
 
-export default DashboardOverview;
+export default Dashboard;

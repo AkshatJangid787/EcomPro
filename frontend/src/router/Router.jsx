@@ -15,6 +15,7 @@ import MyOrder from '../components/MyOrder';
 import Order from '../components/Order';
 import OpenRoute from '../components/OpenRoute';
 import GoogleAuth from '../components/GoogleAuth';
+import Dashboard from '../components/Dashboard';
 
 const Router = createBrowserRouter([
     {
@@ -39,6 +40,7 @@ const Router = createBrowserRouter([
                 path: "/adminDashboard",
                 element: <AdminDashboardPage />,
                 children: [
+                    { index: true, element: <Dashboard />},
                     { path: "admin/product", element: <AdminProduct /> },
                     { path: "admin/user", element: <AdminUser /> },
                     { path: "admin/order", element: <AdminOrder /> },

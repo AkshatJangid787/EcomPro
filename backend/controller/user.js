@@ -59,14 +59,15 @@ exports.login = async (req,res , next)=>{
 }
 
 
-exports.getAllUsers = async (req,res,next)=>{
+exports.getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.find({role : "User"});
-        res.status(200).send({message : "User Fetched" , data : users});
+        const users = await User.find({ role: "User" }).sort({ _id: 1 });
+        res.status(200).send({ message: "Users Fetched", data: users });
     } catch (error) {
         next(error);
     }
-}
+};
+
 
 exports.updateUser = async(req,res,next)=>{
     try {
@@ -85,3 +86,22 @@ exports.updateUser = async(req,res,next)=>{
         next(error);
     }
 }
+
+exports.deleteUser = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const deletedUser = await User.findByIdAndDelete(id);
+      if (!deletedUser) {
+        const error = new Error("User not found");
+        error.name = "NotFound";
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).send({ message: "User deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  
+  
