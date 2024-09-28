@@ -30,7 +30,7 @@ connectDb();
 
 app.use("/uploads",express.static(path.join(__dirname , "uploads")))
 
-app.use("/auth" , userRoutes);
+app.use("/auth", userRoutes);
 app.use("/api/auth",authRoutes);
 app.use("/api",productRoutes);
 
@@ -40,4 +40,4 @@ app.use(gloablErrorHandler);
 
 app.listen(5000,()=>{
     console.log("Server is running on 5000");
-});
+}); 
