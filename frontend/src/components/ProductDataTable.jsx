@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,27 +6,43 @@ import { getAllProduct, deleteProduct } from '../redux/slices/productSlice';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 const ProductDataTable = ({ handleUpdateClick }) => {
   const dispatch = useDispatch();
   const { products, isLoading, error } = useSelector((state) => state.product);
 
+  // State for Dialog open/close and selected product ID
+  const [open, setOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+
   useEffect(() => {
     dispatch(getAllProduct());
   }, [dispatch]);
 
+  // Open the confirmation dialog when delete is clicked
   const handleDeleteClick = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      dispatch(deleteProduct(id));
-    }
+    setSelectedProductId(id);
+    setOpen(true);
+  };
+
+  // Close the dialog
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  // Confirm delete and dispatch deleteProduct action
+  const handleConfirmDelete = () => {
+    dispatch(deleteProduct(selectedProductId));
+    setOpen(false); // Close the dialog
   };
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'id', headerName: 'ID', width: 30 },
     {
       field: 'productUrl',
       headerName: 'Product Image',
-      width: 230,
+      width: 180,
       renderCell: (params) => (
         <div>
           <img
@@ -37,10 +53,10 @@ const ProductDataTable = ({ handleUpdateClick }) => {
         </div>
       ),
     },
-    { field: 'name', headerName: 'Product Name', width: 230 },
-    { field: 'category', headerName: 'Category', width: 230 },
+    { field: 'name', headerName: 'Product Name', width: 180 },
+    { field: 'category', headerName: 'Category', width: 150 },
     { field: 'description', headerName: 'Description', width: 290 },
-    { field: 'price', headerName: 'Price', width: 150 },
+    { field: 'price', headerName: 'Price', width: 100 },
     {
       field: 'action',
       headerName: 'Action',
@@ -54,7 +70,7 @@ const ProductDataTable = ({ handleUpdateClick }) => {
             <FaEdit className="mr-1" /> Edit
           </button>
           <button
-            onClick={() => handleDeleteClick(params.row._id)}
+            onClick={() => handleDeleteClick(params.row._id)} // Open confirmation dialog on delete click
             className="flex items-center text-red-500 hover:underline"
           >
             <FaTrash className="mr-1" /> Delete
@@ -79,6 +95,7 @@ const ProductDataTable = ({ handleUpdateClick }) => {
           getRowHeight={() => 'auto'}
           rows={products}
           columns={columns}
+          checkboxSelection
           pageSizeOptions={[5, 10, 100]}
           sx={{
             border: 0,
@@ -91,6 +108,29 @@ const ProductDataTable = ({ handleUpdateClick }) => {
           }}
         />
       )}
+
+      {/* Confirmation Dialog for Deleting Product */}
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Product</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="secondary" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

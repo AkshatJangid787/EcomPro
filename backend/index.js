@@ -8,6 +8,8 @@ const productRoutes = require("./router/product");
 const passport = require("passport");
 const session = require("express-session");
 const path = require("path");
+const cartRoutes = require("./router/cart");
+const orderRoutes = require("./router/order");
 require("dotenv").config();
 require("./config/passport");
 
@@ -33,7 +35,8 @@ app.use("/uploads",express.static(path.join(__dirname , "uploads")))
 app.use("/auth", userRoutes);
 app.use("/api/auth",authRoutes);
 app.use("/api",productRoutes);
-
+app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.use(gloablErrorHandler);
 

@@ -1,60 +1,126 @@
-import { createSlice } from '@reduxjs/toolkit';
+// cartSlice.js corrections
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-const initialState = {
-  cartItems: [],
-  totalQuantity: 0,
-  totalPrice: 0,
-};
-
-const cartSlice = createSlice({
-  name: 'cart',
-  initialState,
-  reducers: {
-    addToCart: (state, action) => {
-      const existingItem = state.cartItems.find(item => item.id === action.payload.id);
-      if (existingItem) {
-        existingItem.quantity += action.payload.quantity || 1;
-      } else {
-        state.cartItems.push({ ...action.payload, quantity: action.payload.quantity || 1 });
-      }
-      state.totalQuantity += action.payload.quantity || 1;
-      state.totalPrice += action.payload.price * (action.payload.quantity || 1);
-    },
-
-    removeFromCart: (state, action) => {
-      const itemIndex = state.cartItems.findIndex(item => item.id === action.payload.id);
-      if (itemIndex !== -1) {
-        state.totalQuantity -= state.cartItems[itemIndex].quantity;
-        state.totalPrice -= state.cartItems[itemIndex].price * state.cartItems[itemIndex].quantity;
-        state.cartItems.splice(itemIndex, 1);
-      }
-    },
-
-    increaseQuantity: (state, action) => {
-      const existingItem = state.cartItems.find(item => item.id === action.payload.id);
-      if (existingItem) {
-        existingItem.quantity += 1;
-        state.totalQuantity += 1;
-        state.totalPrice += existingItem.price;
-      }
-    },
-
-    decreaseQuantity: (state, action) => {
-      const existingItem = state.cartItems.find(item => item.id === action.payload.id);
-      if (existingItem && existingItem.quantity > 1) {
-        existingItem.quantity -= 1;
-        state.totalQuantity -= 1;
-        state.totalPrice -= existingItem.price;
-      }
-    },
-
-    clearCart: (state) => {
-      state.cartItems = [];
-      state.totalQuantity = 0;
-      state.totalPrice = 0;
-    },
-  },
+export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { rejectWithValue }) => {
+    try {
+        const { data } = await axios.get('http://localhost:5000/api/cart', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        return data.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
 });
 
-export const { addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart } = cartSlice.actions;
+export const addToCart = createAsyncThunk('cart/addToCart', async ({ productId, quantity }, { rejectWithValue }) => {
+    try {
+        const response = await axios.post('http://localhost:5000/api/cart/add', 
+            { productId, quantity }, 
+            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        );
+        return response.data.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
+export const removeFromCart = createAsyncThunk('cart/removeFromCart', async (productId, { rejectWithValue }) => {
+    try {
+        const response = await axios.delete(`http://localhost:5000/api/cart/${productId}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        return response.data.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
+export const updateCartItem = createAsyncThunk(
+    'cart/updateCartItem',
+    async ({ productId, quantity }, { rejectWithValue }) => {
+        try {
+            const response = await axios.patch(
+                `http://localhost:5000/api/cart/${productId}`,
+                { quantity },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const clearCart = createAsyncThunk(
+  'cart/clearCart',
+  async (_, { rejectWithValue }) => {
+      try {
+          const response = await axios.delete('http://localhost:5000/api/cart/clear', {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+          return response.data;
+      } catch (error) {
+          return rejectWithValue(error.response.data);
+      }
+  }
+);
+
+const cartSlice = createSlice({
+    name: 'cart',
+    initialState: {
+        items: [],
+        total: 0,
+        loading: false,
+        error: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchCart.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchCart.fulfilled, (state, action) => {
+                state.loading = false;
+                state.items = action.payload.items;
+                state.total = action.payload.items.reduce(
+                    (total, item) => total + (item.quantity * item.productId.price), 
+                    0
+                );
+            })
+            .addCase(fetchCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || 'Failed to fetch cart';
+            })
+            .addCase(addToCart.fulfilled, (state, action) => {
+                state.items = action.payload.items;
+                state.total = action.payload.items.reduce(
+                    (total, item) => total + (item.quantity * item.productId.price), 
+                    0
+                );
+            })
+            .addCase(removeFromCart.fulfilled, (state, action) => {
+                state.items = action.payload.items;
+                state.total = action.payload.items.reduce(
+                    (total, item) => total + (item.quantity * item.productId.price), 
+                    0
+                );
+            })
+            .addCase(updateCartItem.fulfilled, (state, action) => {
+                state.items = action.payload.items;
+                state.total = action.payload.items.reduce(
+                    (total, item) => total + (item.quantity * item.productId.price), 
+                    0
+                );
+            })
+            .addCase(clearCart.fulfilled, (state) => {
+              state.items = [];
+              state.total = 0;
+          })
+          .addCase(clearCart.rejected, (state, action) => {
+              state.error = action.payload?.message || 'Failed to clear cart';
+          });
+    },
+});
+
 export default cartSlice.reducer;

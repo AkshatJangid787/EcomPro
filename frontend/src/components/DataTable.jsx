@@ -25,8 +25,8 @@ export default function DataTable() {
   return (
     <Paper sx={{ height: 400, width: '100%' }}>
       <DataGrid
-        rows={users.map(user => ({
-          id: user._id,
+        rows={users.map((user, index) => ({
+          id: index + 1,
           name: user.name,
           email: user.email,
           phoneNumber: user.phoneNumber,

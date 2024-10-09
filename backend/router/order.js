@@ -1,10 +1,12 @@
-const express = require('express');
-const { createOrder, getAllOrders, getOrderStats } = require('../controller/order');
-
+const express = require("express");
+const { getOrders, createOrder } = require("../controller/order");
+const { authenticate } = require("../middleware/auth");
 const router = express.Router();
 
-router.post('/orders', createOrder);
-router.get('/orders', getAllOrders);
-router.get('/order-stats', getOrderStats);
+// Get orders for the logged-in user
+router.get("/", authenticate, getOrders);
+
+// Create an order
+router.post("/", authenticate, createOrder);
 
 module.exports = router;
