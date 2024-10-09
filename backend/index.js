@@ -38,6 +38,11 @@ app.use("/api",productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 
+
+app.get("/",(req, res)=>{
+    res.send("Server is running");
+})
+
 app.use(gloablErrorHandler);
 
 
